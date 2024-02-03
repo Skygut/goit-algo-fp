@@ -13,19 +13,18 @@ class Node:
         self.id = str(uuid.uuid4())
 
 
-def add_edges(graph, node, pos, x=0, y=0, layer=1):
+def add_edges_combined(graph, node, pos, x=0, y=0, layer=1):
     if node is not None:
         graph.add_node(node.id, color=node.color, label=node.val)
+        pos[node.id] = (x, y)
         if node.left:
             graph.add_edge(node.id, node.left.id)
             l = x - 1 / 2**layer
-            pos[node.left.id] = (l, y - 1)
-            add_edges(graph, node.left, pos, x=l, y=y - 1, layer=layer + 1)
+            add_edges_combined(graph, node.left, pos, x=l, y=y - 1, layer=layer + 1)
         if node.right:
             graph.add_edge(node.id, node.right.id)
             r = x + 1 / 2**layer
-            pos[node.right.id] = (r, y - 1)
-            add_edges(graph, node.right, pos, x=r, y=y - 1, layer=layer + 1)
+            add_edges_combined(graph, node.right, pos, x=r, y=y - 1, layer=layer + 1)
     return graph
 
 
@@ -80,29 +79,12 @@ def copy_tree(node):
 
 
 def draw_trees_combined(dfs_root, bfs_root):
-    def add_edges_combined(graph, node, pos, x=0, y=0, layer=1):
-        if node is not None:
-            graph.add_node(node.id, color=node.color, label=node.val)
-            if node.left:
-                graph.add_edge(node.id, node.left.id)
-                l = x - 1 / 2**layer
-                pos[node.left.id] = (l, y - 1)
-                add_edges_combined(graph, node.left, pos, x=l, y=y - 1, layer=layer + 1)
-            if node.right:
-                graph.add_edge(node.id, node.right.id)
-                r = x + 1 / 2**layer
-                pos[node.right.id] = (r, y - 1)
-                add_edges_combined(
-                    graph, node.right, pos, x=r, y=y - 1, layer=layer + 1
-                )
-        return graph
-
     dfs_tree = nx.DiGraph()
-    dfs_pos = {dfs_root.id: (-1, 0)}
+    dfs_pos = {}
     dfs_tree = add_edges_combined(dfs_tree, dfs_root, dfs_pos)
 
     bfs_tree = nx.DiGraph()
-    bfs_pos = {bfs_root.id: (1, 0)}
+    bfs_pos = {}
     bfs_tree = add_edges_combined(bfs_tree, bfs_root, bfs_pos)
 
     dfs_colors = [node[1]["color"] for node in dfs_tree.nodes(data=True)]
