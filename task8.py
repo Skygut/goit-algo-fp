@@ -57,32 +57,26 @@ def bfs(root):
     return bfs_order
 
 
-def update_node_colors_by_order(root, order):
+def update_node_colors_by_order_new(root, order):
     order_dict = {val: idx for idx, val in enumerate(order)}
 
     def update_colors(node):
         if node:
             color_intensity = order_dict[node.val] / len(order)
-            node.color = (0.5, 0.5, 1 - color_intensity)
+            node.color = (0.7, 0.7, 1 - color_intensity)
             update_colors(node.left)
             update_colors(node.right)
 
     update_colors(root)
 
 
-def draw_tree(tree_root):
-    tree = nx.DiGraph()
-    pos = {tree_root.id: (0, 0)}
-    tree = add_edges(tree, tree_root, pos)
-
-    colors = [node[1]["color"] for node in tree.nodes(data=True)]
-    labels = {node[0]: node[1]["label"] for node in tree.nodes(data=True)}
-
-    plt.figure(figsize=(8, 5))
-    nx.draw(
-        tree, pos=pos, labels=labels, arrows=False, node_size=2500, node_color=colors
-    )
-    plt.show()
+def copy_tree(node):
+    if node is None:
+        return None
+    new_node = Node(node.val)
+    new_node.left = copy_tree(node.left)
+    new_node.right = copy_tree(node.right)
+    return new_node
 
 
 def draw_trees_combined(dfs_root, bfs_root):
@@ -142,7 +136,7 @@ def draw_trees_combined(dfs_root, bfs_root):
     plt.show()
 
 
-# Створення дерева та виконання обходів
+# Створення дерева
 root = Node(0)
 root.left = Node(4)
 root.left.left = Node(5)
@@ -151,14 +145,15 @@ root.right = Node(1)
 root.right.left = Node(3)
 root.right.right = Node(2)
 
+# Виконання обходу DFS та оновлення кольорів
 dfs_order = dfs(root)
-update_node_colors_by_order(root, dfs_order)
-dfs_root = root
+dfs_tree_root = copy_tree(root)
+update_node_colors_by_order_new(dfs_tree_root, dfs_order)
 
+# Виконання обходу BFS та оновлення кольорів
 bfs_order = bfs(root)
-update_node_colors_by_order(root, bfs_order)
-bfs_root = root
+bfs_tree_root = copy_tree(root)
+update_node_colors_by_order_new(bfs_tree_root, bfs_order)
 
-draw_trees_combined(dfs_root, bfs_root)
-print("DFS Order:", dfs_order)
-print("BFS Order:", bfs_order)
+# Візуалізація обох дерев на одній фігурі
+draw_trees_combined(dfs_tree_root, bfs_tree_root)
